@@ -37,13 +37,13 @@ services:
       - "8603:8600"
       - "9003:9001"
 
-  acc1:
-    image: acc
-    hostname: acc1
+  akka-cluster-demo1:
+    image: sap1ens/akka-cluster-demo
+    hostname: akka-cluster-demo1
     links:
       - consul1
-      - acc2
-      - acc3
+      - akka-cluster-demo2
+      - akka-cluster-demo3
     ports:
       - "80:80"
       - "2551:2551"
@@ -51,12 +51,12 @@ services:
       - CONSUL_HOST=consul1
       - SERVICE_PORT=2551
 
-  acc2:
-    image: acc
-    hostname: acc2
+  akka-cluster-demo2:
+    image: sap1ens/akka-cluster-demo
+    hostname: akka-cluster-demo2
     links:
       - consul1
-      - acc3
+      - akka-cluster-demo3
     ports:
       - "81:80"
       - "2552:2552"
@@ -65,9 +65,9 @@ services:
       - SERVICE_AKKA_PORT=2552
       - SERVICE_PORT=2552
 
-  acc3:
-    image: acc
-    hostname: acc3
+  akka-cluster-demo3:
+    image: sap1ens/akka-cluster-demo
+    hostname: akka-cluster-demo3
     links:
       - consul1
     ports:

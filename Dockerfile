@@ -1,5 +1,3 @@
-#sbt stage && docker build -t "$(basename "$(pwd)")" . && docker run -it "$(basename "$(pwd)")"
-
 FROM openjdk:8-jre
 
 ADD run.sh /app/run.sh
