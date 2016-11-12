@@ -67,3 +67,7 @@ val sap1ensMergeStrategy: String => MergeStrategy = {
 mergeStrategy in assembly := sap1ensMergeStrategy
 
 test in assembly := {}
+
+javaOptions in Test := Seq("-Dconfig.resource=testing.conf")
+
+fork := true
