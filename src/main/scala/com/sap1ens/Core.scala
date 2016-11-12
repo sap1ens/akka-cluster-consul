@@ -45,15 +45,17 @@ trait ClusteredBootedCore extends BootedCore with CoreActors with LazyLogging {
   }
 
   val cluster = Cluster(system)
+  val isConsulEnabled = config.getBoolean("consul.enabled")
 
-  val scheduler: Cancellable = system.scheduler.schedule(5 seconds, 30 seconds, new Runnable {
+  // retrying cluster join until success
+  val scheduler: Cancellable = system.scheduler.schedule(10 seconds, 30 seconds, new Runnable {
     override def run(): Unit = {
       val selfAddress = cluster.selfAddress
-      logger.info(s"selfAddress: $selfAddress")
+      logger.debug(s"Cluster bootstrap, self address: $selfAddress")
 
-      val serviceSeeds = if (config.getBoolean("consul.enabled")) {
-        val serviceAddresses = Consul.getServiceAddresses
-        logger.info(s"serviceAddresses: $serviceAddresses")
+      val serviceSeeds = if (isConsulEnabled) {
+        val serviceAddresses = ConsulAPI.getServiceAddresses
+        logger.debug(s"Cluster bootstrap, service addresses: $serviceAddresses")
 
         // http://doc.akka.io/docs/akka/2.4.4/scala/cluster-usage.html
         //
@@ -67,7 +69,7 @@ trait ClusteredBootedCore extends BootedCore with CoreActors with LazyLogging {
         List(selfAddress)
       }
 
-      logger.info(s"serviceSeeds: $serviceSeeds")
+      logger.debug(s"Cluster bootstrap, found service seeds: $serviceSeeds")
 
       cluster.joinSeedNodes(serviceSeeds)
     }
