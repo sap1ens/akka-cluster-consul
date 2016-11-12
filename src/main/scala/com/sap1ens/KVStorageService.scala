@@ -13,6 +13,8 @@ object KVStorageService {
   case class Updated(key: String) extends KVResult
   case class Deleted(key: String) extends KVResult
 
+  case object End
+
   def props() = Props(classOf[KVStorageService])
 }
 
@@ -43,5 +45,7 @@ class KVStorageService extends Actor with ActorLogging {
 
       sender() ! Deleted(key)
     }
+
+    case _ =>
   }
 }

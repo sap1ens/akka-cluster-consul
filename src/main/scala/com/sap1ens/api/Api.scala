@@ -1,18 +1,19 @@
 package com.sap1ens.api
 
 import spray.routing._
-import akka.actor.{ActorRef, ActorLogging, Props}
+import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.io.IO
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import spray.can.Http
 import spray.json.DefaultJsonProtocol
 import spray.util.LoggingContext
 import spray.httpx.SprayJsonSupport
 import com.sap1ens.utils.ConfigHolder
-import com.sap1ens.{Services, Core, CoreActors}
-import spray.http.HttpHeaders.{`Access-Control-Allow-Origin`, `Access-Control-Allow-Credentials`, `Access-Control-Allow-Headers`, `Access-Control-Allow-Methods`}
+import com.sap1ens.{ClusteredBootedCore, Core, CoreActors, Services}
+import spray.http.HttpHeaders.{`Access-Control-Allow-Credentials`, `Access-Control-Allow-Headers`, `Access-Control-Allow-Methods`, `Access-Control-Allow-Origin`}
 import spray.http.HttpMethods._
-import spray.http.{StatusCodes, HttpOrigin, SomeOrigins}
+import spray.http.{HttpOrigin, SomeOrigins, StatusCodes}
 
 trait CORSSupport extends Directives {
   private val CORSHeaders = List(
@@ -31,12 +32,13 @@ trait CORSSupport extends Directives {
 }
 
 trait Api extends Directives with RouteConcatenation with CORSSupport with ConfigHolder {
-  this: CoreActors with Core =>
+  this: ClusteredBootedCore =>
 
   val routes =
     respondWithCORS(config.getString("origin.domain")) {
       pathPrefix("api") {
-        new KVRoutes(kvService).route
+        new HealthCheckRoutes().route ~
+        new KVRoutes(getKVService).route
       }
     }
 
