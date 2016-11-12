@@ -24,7 +24,7 @@ object KVRoutes {
   }
 }
 
-class KVRoutes(kvService: ActorRef)(implicit ec: ExecutionContext, log: LoggingContext) extends ApiRoute {
+class KVRoutes(kvService: () => ActorRef)(implicit ec: ExecutionContext, log: LoggingContext) extends ApiRoute {
 
   import KVRoutes._
   import KVRoutesProtocol._
@@ -37,7 +37,7 @@ class KVRoutes(kvService: ActorRef)(implicit ec: ExecutionContext, log: LoggingC
   val route: Route =
     path("kv" / Segment) { (key) =>
       get {
-        val future = (kvService ? Get(key)).mapTo[KVResult]
+        val future = (kvService() ? Get(key)).mapTo[KVResult]
 
         onComplete(future) {
           case Success(result @ Result(_: Some[String])) =>
@@ -54,7 +54,7 @@ class KVRoutes(kvService: ActorRef)(implicit ec: ExecutionContext, log: LoggingC
     } ~
     path("kv" / Segment / Segment) { (key, value) =>
       put {
-        val future = (kvService ? Set(key, value)).mapTo[KVResult]
+        val future = (kvService() ? Set(key, value)).mapTo[KVResult]
 
         onComplete(future) {
           case Success(_) =>
@@ -68,7 +68,7 @@ class KVRoutes(kvService: ActorRef)(implicit ec: ExecutionContext, log: LoggingC
     } ~
     path("kv" / Segment) { (key) =>
       delete {
-        val future = (kvService ? Delete(key)).mapTo[KVResult]
+        val future = (kvService() ? Delete(key)).mapTo[KVResult]
 
         onComplete(future) {
           case Success(_) =>
