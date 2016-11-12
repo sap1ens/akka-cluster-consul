@@ -36,8 +36,7 @@ trait Api extends Directives with RouteConcatenation with CORSSupport with Confi
   val routes =
     respondWithCORS(config.getString("origin.domain")) {
       pathPrefix("api") {
-        new Example1Routes(services).route ~
-        new Example2Routes().route
+        new KVRoutes(kvService).route
       }
     }
 
@@ -63,23 +62,7 @@ object ApiRoute {
 
   object ApiMessages {
     val UnknownException = "Unknown exception"
-    val UnsupportedService = "Sorry, provided service is not supported."
   }
 }
 
-abstract class ApiRoute(services: Services = Services.empty)(implicit log: LoggingContext) extends Directives with SprayJsonSupport {
-
-  import com.sap1ens.api.ApiRoute.{ApiMessages, Message}
-  import com.sap1ens.api.ApiRoute.ApiRouteProtocol._
-
-  def withService(id: String)(action: ActorRef => Route) = {
-    services.get(id.toLowerCase) match {
-      case Some(provider) =>
-        action(provider)
-
-      case None =>
-        log.error(s"Unsupported service: $id")
-        complete(StatusCodes.BadRequest, Message(ApiMessages.UnsupportedService))
-    }
-  }
-}
+abstract class ApiRoute extends Directives with SprayJsonSupport
